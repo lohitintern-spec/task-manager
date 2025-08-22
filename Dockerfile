@@ -7,6 +7,7 @@ WORKDIR /app
 
 # Copy the package.json and package-lock.json first
 # This allows Docker to cache the npm install step
+COPY prisma ./prisma/
 COPY package*.json ./
 
 # Install application dependencies
