@@ -31,6 +31,7 @@ jobs:
         run:  docker pull lohitintern/task-manager:latest
 
       - name: Stop the old container
+      #temp something i wrote
         run: docker stop task-manager-app || true
 
       - name: Remove the old container
