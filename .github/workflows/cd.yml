@@ -38,4 +38,4 @@ jobs:
         run: docker rm task-manager-app || true
       
       - name: Run the new container
-        run: docker run -d --name task-manager-app -p 8080:8080 lohitintern/task-manager:latest
+        run: docker run -d --name task-manager-app -p 8080:3000 lohitintern/task-manager:latest
