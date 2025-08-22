@@ -1,6 +1,6 @@
 # .github/workflows/ci.yml
 
-name: Docker Image CI
+name: CI Pipeline
 
 on:
   push:
