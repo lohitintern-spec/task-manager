@@ -5,6 +5,8 @@ on:
     workflows: ["CI Pipeline"]
     types:
         - completed
+    branches:
+      - "main"
 
 jobs:
   deploy:
@@ -19,15 +21,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+        
+      - name: Clean up old Docker images on EC2
+        run: |
+          docker images --format "{{.Repository}} {{.ID}}" | grep "lohitintern/task-manager" | awk '{print $2}' | xargs -r docker rmi || true
+
 
       - name: Pull the latest Docker image
-        run:  sudo docker pull lohitintern/task-manager:latest
+        run:  docker pull lohitintern/task-manager:latest
 
       - name: Stop the old container
-        run: sudo docker stop task-manager-app || true
+        run: docker stop task-manager-app || true
 
       - name: Remove the old container
-        run: sudo docker rm task-manager-app || true
+        run: docker rm task-manager-app || true
       
       - name: Run the new container
-        run: sudo docker run -d --name task-manager-app -p 80:80 lohitintern/task-manager:latest
+        run: docker run -d --name task-manager-app -p 80:80 lohitintern/task-manager:latest

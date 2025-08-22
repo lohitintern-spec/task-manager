@@ -21,11 +21,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build the docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
 
       - name: Push the docker image to Docker Hub
-        run: |
-          # Use the correct syntax to reference the secret in the script
-          docker tag ${{ secrets.DOCKER_USERNAME }}/task-manager:latest ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
