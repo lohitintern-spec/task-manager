@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+html{
+  scroll-behavior: smooth;
+}
+
+.poppins{
+  font-family: "Poppins", serif;
+  font-optical-sizing: auto;
+  font-weight: normal;
+  font-style: normal;
+}
+
+button:active{
+  transform: scale(0.95);
+  transition: all ease-in-out;
+}
+
+/* From Uiverse.io by Ali-Tahmazi99 */ 
+.loader {
+  width: 65px;
+  height: 65px;
+  border: 8px solid #a855f7a6;
+  border-radius: 50px;
+  position: relative;
+ }
+ 
+ .loader span {
+  display: block;
+  background: #a855f7;
+ }
+ 
+ .loader .hour ,
+ .loader .min {
+  width: 6px;
+  height: 22px;
+  border-radius: 50px;
+  position: absolute;
+  top: 24.5px;
+  left: 21px;
+  animation: load9243 1.2s linear infinite;
+  transform-origin: top center;
+ }
+ 
+ .loader .min {
+  height: 17px;
+  animation: load9243 4s linear infinite;
+ }
+ 
+ .loader .circel {
+  width: 10px;
+  height: 10px;
+  border-radius: 50px;
+  position: absolute;
+  top: 19px;
+  left: 19px;
+ }
+ 
+ @keyframes load9243 {
+  0% {
+   transform: rotate(0deg);
+  }
+ 
+  100% {
+   transform: rotate(360deg);
+  }
+ }
