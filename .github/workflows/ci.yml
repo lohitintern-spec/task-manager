@@ -1,5 +1,3 @@
-# .github/workflows/ci.yml
-
 name: CI Pipeline
 
 on:
@@ -20,22 +18,29 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build the docker image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/task-manager:latest ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
+    #   - name: Build and Tag the Docker Image
+    #     run: |
+    #       docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
+    #       docker tag ${{ secrets.DOCKER_USERNAME }}/task-manager:latest ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
 
-      - name: Scan for Vulnerabilities
-        id: trivy_scan 
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'centos:7'
-          format: 'table'
-          severity: 'LOW ,HIGH ,CRITICAL'
-        continue-on-error: true
+      - name: Run Trivy Scan
+        id: trivy_scan
+        run: |
+          TRIVY_REPORT=$(trivy image --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL --format table owasp/juice-shop:v12.0.0)
+          
+          echo "## Vulnerability Scan Report" >> $GITHUB_STEP_SUMMARY
+          echo "<pre><code>$TRIVY_REPORT</code></pre>" >> $GITHUB_STEP_SUMMARY
+          
+          if echo "$TRIVY_REPORT" | grep -q 'HIGH' || echo "$TRIVY_REPORT" | grep -q 'CRITICAL'; then
+            echo "vulnerability_found=true" >> $GITHUB_OUTPUT
+            echo "::warning::Critical vulnerabilities were found. The pipeline will fail after this step."
+          else
+            echo "vulnerability_found=false" >> $GITHUB_OUTPUT
+            echo "No high or critical vulnerabilities were found."
+          fi
 
       - name: Send Email Alert on Vulnerability
-        if: ${{ steps.trivy_scan.outcome == 'failure' }}
+        if: ${{ steps.trivy_scan.outputs.vulnerability_found == 'true' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com 
@@ -44,14 +49,22 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: 'CRITICAL VULNERABILITIES FOUND in ${{ github.repository }}'
           body: |
-            The Trivy scan for the Docker image has failed.
-            Vulnerabilities were found in the following image:
-            ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
+            The Trivy scan for the Docker image has failed due to high or critical vulnerabilities.
 
             Please check the workflow logs for a detailed report of the vulnerabilities.
+            
+            Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: 'lohit.intern@gmail.com'
           from: 'GitHub Actions' 
 
-      - name: Push the docker image to Docker Hub
-        if: ${{ steps.trivy_scan.outcome == 'success' }}
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
+      - name: Fail the pipeline if vulnerabilities were found
+        if: ${{ steps.trivy_scan.outputs.vulnerability_found == 'true' }}
+        run: |
+          echo "Failing pipeline due to critical vulnerabilities."
+          exit 1
+      
+      - name: Push the Docker Image to Docker Hub
+        if: ${{ steps.trivy_scan.outputs.vulnerability_found == 'false' }}
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
