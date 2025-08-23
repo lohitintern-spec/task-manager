@@ -27,7 +27,7 @@ jobs:
         id: trivy_scan 
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ secrets.DOCKER_USERNAME }}/task-manager:latest'
+          image-ref: 'vulnerables/web-dvwa'
           format: 'table'
           severity: 'LOW'
         continue-on-error: true
