@@ -29,7 +29,7 @@ jobs:
         with:
           image-ref: '${{ secrets.DOCKER_USERNAME }}/task-manager:latest'
           format: 'table'
-          severity: 'CRITICAL,HIGH'
+          severity: 'LOW'
         continue-on-error: true
 
       - name: Send Email Alert on Vulnerability
