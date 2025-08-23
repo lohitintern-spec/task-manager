@@ -21,7 +21,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build the docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/task-manager:latest ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
 
       - name: Scan for Vulnerabilities
         id: trivy_scan 
@@ -51,4 +53,5 @@ jobs:
           from: 'GitHub Actions' 
 
       - name: Push the docker image to Docker Hub
+        if: ${{ steps.trivy_scan.outcome == 'success' }}
         run: docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
