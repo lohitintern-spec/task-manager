@@ -29,40 +29,14 @@ jobs:
         id: trivy_scan
         uses: aquasecurity/trivy-action@0.18.0 
         with:
+          # Trivy will print results directly to the job logs by default,
+          # as we are no longer specifying an `output` file.
           image-ref: 'vulnerables/web-dvwa'
           severity: 'HIGH,CRITICAL'
-          exit-code: 1 # This will make the step fail if HIGH or CRITICAL vulns are found
-          format: 'table'
-          output: 'trivy-report.txt' # Save the report to a file
-        # THIS IS THE KEY: It allows the workflow to continue even if this step fails.
+          exit-code: 1 
         continue-on-error: true
 
-      - name: Prepare Vulnerability Report for Email
-        # This step will only run if the Trivy scan step failed.
-        if: steps.trivy_scan.outcome == 'failure'
-        run: |
-          # Check if the report file was successfully created.
-          # This handles cases where Trivy might have failed to even start.
-          if [ -f "trivy-report.txt" ]; then
-            # Read the report content into a shell variable.
-            REPORT_BODY=$(cat trivy-report.txt)
-            
-            # Escape special characters for multi-line GitHub Actions environment variables.
-            REPORT_BODY="${REPORT_BODY//'%'/'%25'}"
-            REPORT_BODY="${REPORT_BODY//$'\n'/'%0A'}"
-            REPORT_BODY="${REPORT_BODY//$'\r'/'%0D'}"
-            
-            # Set the prepared body as a job environment variable.
-            echo "REPORT_FOR_EMAIL=$REPORT_BODY" >> $GITHUB_ENV
-            echo "::warning::Vulnerabilities found! Preparing email..."
-          else
-            # If the report was not created, set a generic error message.
-            echo "REPORT_FOR_EMAIL=Trivy scan failed to complete. No report was generated. Check workflow logs for details." >> $GITHUB_ENV
-            echo "::error::Trivy scan failed to complete."
-          fi
-
-      - name: Send Email Alert
-        # This step also only runs if the Trivy scan step failed.
+      - name: Send Email Alert on Vulnerability
         if: steps.trivy_scan.outcome == 'failure'
         uses: dawidd6/action-send-mail@v3
         with:
@@ -71,21 +45,16 @@ jobs:
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: 'CRITICAL VULNERABILITIES FOUND in ${{ github.repository }}'
-          # Use the environment variable from the previous step as the email body.
           body: |
-            The Trivy scan for the Docker image has failed due to vulnerabilities.
-
-            Please review the report below:
-
-            ${{ env.REPORT_FOR_EMAIL }}
+            The Trivy scan has found vulnerabilities in your Docker image.
             
-            ---
+            Please go through the GitHub Actions logs to see the full report.
+            
             Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: 'lohit.intern@gmail.com'
           from: 'GitHub Actions'
 
       - name: Fail the Pipeline
-        # This final step ensures the job fails, but only after the email has been sent.
         if: steps.trivy_scan.outcome == 'failure'
         run: |
           echo "Failing pipeline due to critical vulnerabilities."
