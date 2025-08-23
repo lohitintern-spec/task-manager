@@ -29,7 +29,7 @@ jobs:
         id: trivy_scan
         uses: aquasecurity/trivy-action@0.18.0 
         with:
-          image-ref: 'owasp/juice-shop:v12.0.0'
+          image-ref: 'vulnerables/web-dvwa'
           severity: 'HIGH,CRITICAL'
           exit-code: 1 # This will make the step fail if HIGH or CRITICAL vulns are found
           format: 'table'
@@ -38,28 +38,23 @@ jobs:
         continue-on-error: true
 
       - name: Send Email Alert and Fail on Vulnerability
-        # This 'if' condition checks the *outcome* of the previous step.
+        # This condition checks if the scan itself failed for ANY reason (vulnerabilities OR operational errors).
         if: steps.trivy_scan.outcome == 'failure'
         run: |
-          # You can combine the email and failure logic into one step
-          # Or keep them separate if you prefer.
+          # The "cat" command needs to be conditional to avoid failing the step if the file was not created.
+          if [ -f "trivy-report.txt" ]; then
+            REPORT_BODY=$(cat trivy-report.txt)
+            REPORT_BODY="${REPORT_BODY//'%'/'%25'}"
+            REPORT_BODY="${REPORT_BODY//$'\n'/'%0A'}"
+            REPORT_BODY="${REPORT_BODY//$'\r'/'%0D'}"
+            echo "REPORT_FOR_EMAIL=$REPORT_BODY" >> $GITHUB_ENV
+            echo "::warning::Vulnerabilities found! Sending email alert..."
+            # --- YOUR EMAIL ACTION GOES HERE ---
+          else
+            echo "::error::Trivy scan failed to complete. No report was generated. Check previous step logs for details."
+          fi
           
-          # First, prepare the email body with the report
-          REPORT_BODY=$(cat trivy-report.txt)
-          
-          # For multiline strings in the next step, we need to format it
-          REPORT_BODY="${REPORT_BODY//'%'/'%25'}"
-          REPORT_BODY="${REPORT_BODY//$'\n'/'%0A'}"
-          REPORT_BODY="${REPORT_BODY//$'\r'/'%0D'}"
-          echo "REPORT_FOR_EMAIL=$REPORT_BODY" >> $GITHUB_ENV
-          
-          # Now, you would call your email action here.
-          # For demonstration, I am just showing the logic.
-          echo "::warning::Vulnerabilities found! Sending email alert..."
-          # --- ADD YOUR dawidd6/action-send-mail@v3 ACTION HERE ---
-          # You can pass ${{ env.REPORT_FOR_EMAIL }} into the body of the email.
-          
-          echo "Failing pipeline due to critical vulnerabilities."
+          # This command ensures the pipeline fails if the previous step failed for any reason.
           exit 1
 
       - name: Push the Docker Image to Docker Hub
