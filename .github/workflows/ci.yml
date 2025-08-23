@@ -31,7 +31,7 @@ jobs:
         with:
           image-ref: 'vulnerables/web-dvwa'
           format: 'table'
-          severity: 'LOW, HIGH, CRITICAL'
+          severity: 'LOW,HIGH,CRITICAL'
         continue-on-error: true
 
       - name: Send Email Alert on Vulnerability
