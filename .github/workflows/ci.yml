@@ -23,5 +23,32 @@ jobs:
       - name: Build the docker image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
 
+      - name: Scan for Vulnerabilities
+        id: trivy_scan 
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/task-manager:latest'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Send Email Alert on Vulnerability
+        if: ${{ steps.trivy_scan.outcome == 'failure' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com 
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: 'CRITICAL VULNERABILITIES FOUND in ${{ github.repository }}'
+          body: |
+            The Trivy scan for the Docker image has failed.
+            Vulnerabilities were found in the following image:
+            ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
+
+            Please check the workflow logs for a detailed report of the vulnerabilities.
+          to: 'lohit.intern@gmail.com'
+          from: 'GitHub Actions' 
+
       - name: Push the docker image to Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
