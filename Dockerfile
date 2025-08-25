@@ -1,41 +1,32 @@
-# Stage 1: The Build Environment
-# This stage builds your Next.js application
-FROM node:18-alpine AS builder
-
-# Set the working directory
+# === BUILDER STAGE ===
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
+COPY prisma ./prisma/
 RUN npm install
-
-# Copy the rest of the application source code
 COPY . .
-
-# Build the Next.js application for production
 RUN npm run build
 
-# Stage 2: The Production Environment
-# This stage creates the final, optimized image
-FROM node:18-alpine
+# === RUNNER STAGE ===
+# Use a minimal base image for the final production container
+FROM node:20-alpine AS runner
 
 # Set the working directory
 WORKDIR /app
 
-# Install only production dependencies
-COPY package*.json ./
-RUN npm install --production
+# Copy the self-contained standalone output from the builder stage
+COPY --from=builder /app/.next/standalone ./
 
-# Copy the built application from the 'builder' stage
-COPY --from=builder /app/.next ./.next
+# The standalone output includes all necessary files,
+# so you don't need to copy them separately.
+# The following lines are no longer needed:
+# COPY --from=builder /app/.next/static ./.next/static
+# COPY --from=builder /app/node_modules ./node_modules
+# COPY --from=builder /app/public ./public
+# COPY --from=builder /app/prisma ./prisma
 
-# Copy the public assets directory
-COPY --from=builder /app/public ./public
-
-# Expose the port Next.js runs on (default is 3000)
+# Expose the port the Next.js app runs on
 EXPOSE 3000
 
-# The command to start the Next.js production server
-CMD ["npm", "start"]
+# Set the default command to start the application
+CMD ["node", "server.js"]
