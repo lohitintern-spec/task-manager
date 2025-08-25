@@ -1,64 +1,88 @@
-name: CI Pipeline
-
-on:
-  push:
-    branches: [ "main" ]
-
-jobs:
-  build_and_push:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Tag the Docker Image
-        id: build
-        run: |
-          docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/task-manager:latest ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
-
-      - name: Scan image with Trivy
-        id: trivy_scan
-        uses: aquasecurity/trivy-action@0.18.0 
-        with:
-          image-ref: '${{ secrets.DOCKER_USERNAME }}/task-manager:latest'
-          severity: 'CRITICAL'
-          exit-code: 1 
-        continue-on-error: true
-
-      - name: Send Email Alert on Vulnerability
-        if: steps.trivy_scan.outcome == 'failure'
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com 
-          server_port: 465
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: 'CRITICAL VULNERABILITIES FOUND in ${{ github.repository }}'
-          body: |
-            The Trivy scan has found vulnerabilities in your Docker image.
-            
-            Please go through the GitHub Actions logs to see the full report.
-            
-            Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          to: 'lohit.intern@gmail.com'
-          from: 'GitHub Actions'
-
-      - name: Fail the Pipeline
-        if: steps.trivy_scan.outcome == 'failure'
-        run: |
-          echo "Failing pipeline due to critical vulnerabilities."
-          exit 1
-      - name: Push the Docker Image to Docker Hub
-        if: steps.trivy_scan.outcome == 'success'
-        run: |
-          echo "No critical vulnerabilities found. Pushing image..."
-          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
+C:.
+├───.vscode
+└───src
+    ├───app
+    │   ├───core
+    │   │   ├───components
+    │   │   │   ├───common-header
+    │   │   │   ├───common-sidebar
+    │   │   │   ├───dynamic-redirect
+    │   │   │   └───loader
+    │   │   ├───guards
+    │   │   ├───interceptors
+    │   │   └───services
+    │   ├───shared
+    │   │   ├───components
+    │   │   │   ├───activity-trail
+    │   │   │   ├───approval-workflow
+    │   │   │   │   └───demo
+    │   │   │   ├───attachment
+    │   │   │   ├───common-badge
+    │   │   │   ├───common-card
+    │   │   │   ├───common-tab
+    │   │   │   ├───common-table
+    │   │   │   ├───configurable-button
+    │   │   │   ├───conversation-trail
+    │   │   │   ├───countdown-timer
+    │   │   │   ├───google-places-component
+    │   │   │   ├───gst-verify
+    │   │   │   ├───login-component
+    │   │   │   ├───phone-otp-verification
+    │   │   │   └───split-button
+    │   │   ├───formly-components
+    │   │   ├───pipes
+    │   │   └───services
+    │   └───wefab
+    │       ├───customer
+    │       │   ├───component
+    │       │   │   ├───customer-header
+    │       │   │   └───customer-sidebar
+    │       │   ├───customer-onboarding
+    │       │   ├───email-verification
+    │       │   ├───login-component
+    │       │   ├───order
+    │       │   │   ├───order-details
+    │       │   │   └───order-list
+    │       │   ├───quotation
+    │       │   │   ├───quotation-details
+    │       │   │   └───quotation-list
+    │       │   ├───rfq
+    │       │   │   ├───ai-analysis-summary-pages
+    │       │   │   ├───create-rfq
+    │       │   │   ├───rfq-list
+    │       │   │   ├───submitted-rfq
+    │       │   │   └───technical-review-page
+    │       │   └───styles
+    │       ├───public-rfq-view
+    │       │   ├───basic-details
+    │       │   └───register-to-quote
+    │       ├───supplier
+    │       │   ├───dashboard
+    │       │   │   └───supplier-dashboard
+    │       │   ├───finder
+    │       │   │   └───supplier-finder
+    │       │   ├───help-section
+    │       │   ├───onboarding
+    │       │   │   ├───supplier-onboarding-combined
+    │       │   │   ├───supplier-onboarding-welcome-component
+    │       │   │   └───supplier-profile-review
+    │       │   ├───order
+    │       │   │   ├───supplier-order
+    │       │   │   └───supplier-order-details
+    │       │   ├───quotation
+    │       │   │   ├───create-quotation
+    │       │   │   ├───supplier-quotation
+    │       │   │   └───supplier-quotation-details
+    │       │   └───rfq
+    │       │       ├───supplier-rfq
+    │       │       └───supplier-rfq-details
+    │       └───wefabTeam
+    │           ├───manage-suppliers
+    │           ├───supplier-finder
+    │           ├───wefabTeam-dashboard
+    │           └───wefabTeam-layout
+    ├───assets
+    │   ├───documents
+    │   └───scss
+    └───environments
+PS C:\Users\USER\Desktop\wefab\deployment_trials\Taurus-development> 
