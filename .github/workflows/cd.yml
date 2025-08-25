@@ -7,31 +7,33 @@ on:
       - completed
     branches:
       - "main"
-    #oduhfrui
+
+env:
+  ECR_REPOSITORY: taskmanager
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
 jobs:
   deploy:
     runs-on: self-hosted
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-        
+      - name: Log in to ECR on the EC2 runner
+        # This command uses the AWS CLI to authenticate the Docker daemon
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
       - name: Retag the current running image as 'previous'
         run: |
-          OLD_IMAGE_ID=$(docker images -q lohitintern/task-manager:latest)
+          OLD_IMAGE_ID=$(docker images -q ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest)
           if [ -n "$OLD_IMAGE_ID" ]; then
-            docker tag $OLD_IMAGE_ID lohitintern/task-manager:previous || true
+            docker tag $OLD_IMAGE_ID ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:previous || true
             echo "Successfully retagged old image as 'previous'"
           else
             echo "No 'latest' image found to tag as 'previous'. This may be the first run."
           fi
 
       - name: Pull the latest Docker image
-        run: docker pull lohitintern/task-manager:latest
+        run: docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
 
       - name: Stop and remove old container
         run: |
@@ -39,7 +41,7 @@ jobs:
           docker rm task-manager-app || true
 
       - name: Run the new container
-        run: docker run -d --name task-manager-app -p 8080:3000 lohitintern/task-manager:latest
+        run: docker run -d --name task-manager-app -p 8080:3000 ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
 
       - name: Clean up old Docker images
         run: docker image prune -f

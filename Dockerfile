@@ -25,6 +25,7 @@ COPY --from=builder /app/.next/standalone ./
 # COPY --from=builder /app/public ./public
 # COPY --from=builder /app/prisma ./prisma
 
+
 # Expose the port the Next.js app runs on
 EXPOSE 3000
 

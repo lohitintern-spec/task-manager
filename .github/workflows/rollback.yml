@@ -3,6 +3,10 @@ name: Rollback Deployment
 on:
   workflow_dispatch:
 
+env:
+  ECR_REPOSITORY: taskmanager
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
 jobs:
   rollback:
     runs-on: self-hosted
@@ -15,4 +19,4 @@ jobs:
         run: docker rm task-manager-app || true
       
       - name: Run the previous, stable container
-        run: docker run -d --name task-manager-app -p 8080:3000 lohitintern/task-manager:previous
+        run: docker run -d --name task-manager-app -p 8080:3000 ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:previous

@@ -4,6 +4,11 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  # Define the ECR repository name and registry URL to make scripts cleaner
+  ECR_REPOSITORY: taskmanager
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
@@ -12,26 +17,33 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      # Replaces the Docker Hub login with AWS ECR login
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
       - name: Build and Tag the Docker Image
         id: build
         run: |
-          docker build --no-cache -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/task-manager:latest ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
+          docker build --no-cache -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest .
+          docker tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
+      # The Trivy scan and email alert sections remain unchanged, as they operate on the built image
       - name: Scan image with Trivy
         id: trivy_scan
         uses: aquasecurity/trivy-action@0.18.0 
         with:
-          image-ref: '${{ secrets.DOCKER_USERNAME }}/task-manager:latest'
+          image-ref: '${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest'
           severity: 'CRITICAL'
           exit-code: 1 
-        continue-on-error: true
+          continue-on-error: true
 
       - name: Send Email Alert on Vulnerability
         if: steps.trivy_scan.outcome == 'failure'
@@ -51,15 +63,16 @@ jobs:
           to: 'lohit.intern@gmail.com'
           from: 'GitHub Actions'
 
-          #nothing
       - name: Fail the Pipeline
         if: steps.trivy_scan.outcome == 'failure'
         run: |
           echo "Failing pipeline due to critical vulnerabilities."
           exit 1
-      - name: Push the Docker Image to Docker Hub
+
+      # Push the Docker Image to ECR instead of Docker Hub
+      - name: Push the Docker Image to ECR
         if: steps.trivy_scan.outcome == 'success'
         run: |
           echo "No critical vulnerabilities found. Pushing image..."
-          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
