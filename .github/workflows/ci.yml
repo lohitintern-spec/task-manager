@@ -5,9 +5,9 @@ on:
     branches: [ "main" ]
 
 env:
-  # Define the ECR repository name and registry URL to make scripts cleaner
-  ECR_REPOSITORY: taskmanager
+  ECR_REPOSITORY: task-manager
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build_and_push:
@@ -17,25 +17,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Replaces the Docker Hub login with AWS ECR login
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      # Step 1: Build the Docker Image Locally (without pushing)
+      - name: Build and Tag the Docker Image Locally
+        id: build-image
+        uses: docker/build-push-action@v5
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          context: .
+          push: false
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          load: true # This makes the image available for the next step (Trivy scan)
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-      
-      - name: Build and Tag the Docker Image
-        id: build
-        run: |
-          docker build --no-cache -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest .
-          docker tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-
-      # The Trivy scan and email alert sections remain unchanged, as they operate on the built image
+      # Step 2: Scan the locally built image with Trivy
       - name: Scan image with Trivy
         id: trivy_scan
         uses: aquasecurity/trivy-action@0.18.0 
@@ -57,22 +49,27 @@ jobs:
           body: |
             The Trivy scan has found vulnerabilities in your Docker image.
             
-            Please go through the GitHub Actions logs to see the full report.
+            The pipeline will now FAIL and the image will NOT be pushed.
             
             Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: 'lohit.intern@gmail.com'
           from: 'GitHub Actions'
 
-      - name: Fail the Pipeline
+      - name: Fail the Pipeline if vulnerabilities found
         if: steps.trivy_scan.outcome == 'failure'
         run: |
           echo "Failing pipeline due to critical vulnerabilities."
           exit 1
 
-      # Push the Docker Image to ECR instead of Docker Hub
+      # Step 3: Conditionally push the image ONLY if the scan passed
       - name: Push the Docker Image to ECR
         if: steps.trivy_scan.outcome == 'success'
         run: |
           echo "No critical vulnerabilities found. Pushing image..."
+          
+          # The fix: We log in to ECR directly before the push to ensure credentials are fresh.
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          
+          # Now, push the image
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
