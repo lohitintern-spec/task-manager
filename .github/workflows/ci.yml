@@ -17,8 +17,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # This step is now only for running subsequent AWS CLI commands if needed,
-      # but it is good practice to keep it for environment setup.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -68,11 +66,8 @@ jobs:
           echo "Failing pipeline due to critical vulnerabilities."
           exit 1
 
-      # The corrected, final block for pushing the image
       - name: Push the Docker Image to ECR
         if: steps.trivy_scan.outcome == 'success'
-        # The 'env' block below explicitly provides the credentials to this step,
-        # which guarantees the AWS CLI will find them.
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -80,8 +75,8 @@ jobs:
         run: |
           echo "No critical vulnerabilities found. Pushing image..."
           
-          # Get a login password and pipe it directly to docker login
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          # This command securely gets a login password and pipes it directly to docker login
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | tr -d '\n' | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
           
           # Now, push the images
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
