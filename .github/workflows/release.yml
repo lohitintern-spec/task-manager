@@ -3,7 +3,7 @@ name: 'Deploy and Release to Production'
 on:
   push:
     branches:
-      - release # This workflow runs ONLY when you push or merge to the 'release' branch
+      - release
 
 permissions:
   contents: write
@@ -11,8 +11,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  # This job is a placeholder for your actual deployment.
-  # Replace the 'run' command with your real build and deploy steps.
+  # YOUR DEPLOY JOB STAYS THE SAME
   deploy:
     name: 'Deploy to Production Server'
     runs-on: ubuntu-latest
@@ -23,28 +22,35 @@ jobs:
       - name: 'Placeholder for Build & Deploy steps'
         run: echo "🚀 Building the Next.js app and deploying to production..."
         # ---
-        # IMPORTANT: REPLACE THE LINE ABOVE WITH YOUR REAL DEPLOYMENT STEPS
-        # e.g., setup node, npm ci, npm run build, scp files, ssh restart server...
+        # IMPORTANT: REPLACE THIS WITH YOUR REAL DEPLOYMENT STEPS
         # ---
 
-  # This job will create the Git Tag and Release Notes
+  # THIS IS THE NEW JOB YOU SHOULD PASTE IN
   create-release:
-    name: 'Create Git Tag and Release Notes'
-    needs: deploy # This job only runs if the 'deploy' job succeeds
+    name: 'Create v1.0.0 Release'
+    needs: deploy
     runs-on: ubuntu-latest
     
     steps:
       - name: 'Checkout code'
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required to fetch all history for version calculation
+          fetch-depth: 0
 
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
+      - name: 'Generate changelog'
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
         with:
-          node-version: '20'
-
-      - name: 'Run semantic-release'
-        uses: cycjimmy/semantic-release-action@v4
+          fromTag: ${{ github.sha }}
+          toTag: ${{ github.sha }}
+      
+      - name: 'Create GitHub Release v1.0.0'
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0.0
+          release_name: Release v1.0.0
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
