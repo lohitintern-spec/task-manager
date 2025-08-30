@@ -3,7 +3,7 @@ name: 'Deploy and Release to Production'
 on:
   push:
     branches:
-      - release
+      - release # This workflow runs ONLY when you push or merge to the 'release' branch
 
 permissions:
   contents: write
@@ -11,7 +11,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  # YOUR DEPLOY JOB STAYS THE SAME
+  # This job is a placeholder for your actual deployment.
+  # Replace the 'run' command with your real build and deploy steps.
   deploy:
     name: 'Deploy to Production Server'
     runs-on: ubuntu-latest
@@ -22,35 +23,35 @@ jobs:
       - name: 'Placeholder for Build & Deploy steps'
         run: echo "🚀 Building the Next.js app and deploying to production..."
         # ---
-        # IMPORTANT: REPLACE THIS WITH YOUR REAL DEPLOYMENT STEPS
+        # IMPORTANT: REPLACE THE LINE ABOVE WITH YOUR REAL DEPLOYMENT STEPS
+        # e.g., setup node, npm ci, npm run build, scp files, ssh restart server...
         # ---
 
-  # THIS IS THE NEW JOB YOU SHOULD PASTE IN
+  # This job will create the Git Tag and Release Notes
   create-release:
     name: 'Create v1.0.0 Release'
-    needs: deploy
+    needs: deploy # This job only runs if the 'deploy' job succeeds
     runs-on: ubuntu-latest
     
     steps:
       - name: 'Checkout code'
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Required to fetch all history for version calculation
 
       - name: 'Generate changelog'
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v4
-        with:
-          fromTag: ${{ github.sha }}
-          toTag: ${{ github.sha }}
+        # CORRECTED: No 'with' block. The action will now correctly find all commits
+        # for the first release since no previous tag exists.
       
       - name: 'Create GitHub Release v1.0.0'
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions
         with:
-          tag_name: v1.0.0
-          release_name: Release v1.0.0
+          tag_name: v2.0.0
+          release_name: Release v2.0.0
           body: ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
