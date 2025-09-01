@@ -43,7 +43,7 @@ jobs:
           image-ref: '${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest'
           severity: 'CRITICAL'
           exit-code: 1 
-          continue-on-error: true
+          # continue-on-error: true
 
       - name: Send Email Alert on Vulnerability
         if: steps.trivy_scan.outcome == 'failure'

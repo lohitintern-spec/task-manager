@@ -1,0 +1,14 @@
+{
+  "release-type": "node",
+  "branches": [
+    {
+      "branch": "release",
+      "release-type": "node"
+    }
+  ],
+  "packages": {
+    ".": {
+      "package-name": "task-manager"
+    }
+  }
+}
