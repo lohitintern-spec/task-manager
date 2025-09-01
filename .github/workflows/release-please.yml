@@ -1,0 +1,25 @@
+# .github/workflows/release-please.yml
+name: 'Release Please PR Bot'
+
+on:
+  push:
+    branches:
+      - main  # This should be your main development branch
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: 'Run Release Please'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Run Release Please Action'
+        uses: google-github-actions/release-please-action@v4
+        with:
+          # This tells the action to create the GitHub release and tag
+          # once the Release PR is merged.
+          release-type: node
+          # Optional: Define a custom title for your Release PR
+          pull-request-title-pattern: 'chore(release): release ${version}'
