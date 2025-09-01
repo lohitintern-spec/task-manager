@@ -1,5 +1,6 @@
-name: Release Please Workflow
+name: Deploy and Release on Merge
 
+# We ONLY trigger on a merged Pull Request. No more confusion.
 on:
   pull_request:
     branches: [release]
@@ -8,80 +9,47 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 
 jobs:
-  # JOB 1: Deploy to EC2 when code is pushed/merged to release
-  deploy:
-    name: 'Deploy to Production'
-    if: |
-      (github.event_name == 'push') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+  # This single job handles everything in sequence.
+  deploy_and_release:
+    # This 'if' condition ensures the job only runs if the PR was merged.
+    if: github.event_pull_request.merged == true
     runs-on: ubuntu-latest
+
     steps:
-      - name: 'Checkout Release Branch'
+      # Step 1: Checkout the code
+      - name: 'Checkout Code'
         uses: actions/checkout@v4
-        
-      - name: 'Deploy to EC2'
+        with:
+          # Fetch all history so release-please can analyze commits
+          fetch-depth: 0
+
+      # Step 2: Deploy to your server
+      - name: 'Deploy to Production'
         run: |
-          echo "🚀 Deploying to Production EC2..."
+          echo "🚀 Deploying to Production..."
           echo "Branch: ${{ github.ref_name }}"
           echo "Commit: ${{ github.sha }}"
           echo "✅ Production deployment complete!"
+          # Your real EC2 deployment commands would go here.
 
-  # JOB 2: Release Please - Create/Update Release PR
-  release-please:
-    name: 'Release Please'
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
+      # Step 3: Create the GitHub Release and Tag
+      # This step will only run if the deployment step above succeeds.
       - name: 'Run Release Please'
         id: release
         uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: node
-          # package-name: task-manager
+          # This is the "no extra PRs" mode that finds conventional
+          # commits from the merge and creates the release directly.
+          skip-github-pull-request: true
+          release-type: node # Or 'simple' if you don't use package.json
 
-      - name: 'Show Release Please Results'
+      # Step 4: Show the results (this will run when a release is made)
+      - name: 'Show Release Results'
+        if: ${{ steps.release.outputs.release_created }}
         run: |
-          echo "📄 Release Please Results:"
-          echo "Release created: ${{ steps.release.outputs.release_created }}"
-          echo "Tag name: ${{ steps.release.outputs.tag_name }}"
-          echo "Release URL: ${{ steps.release.outputs.html_url }}"
-          echo "PR created: ${{ steps.release.outputs.pr }}"
-          
-          if [[ "${{ steps.release.outputs.release_created }}" == "true" ]]; then
-            echo "🎉 GitHub Release created: ${{ steps.release.outputs.html_url }}"
-          elif [[ -n "${{ steps.release.outputs.pr }}" ]]; then
-            echo "📋 Release PR created/updated. You can review and merge it."
-          else
-            echo "ℹ️ No release PR needed (no conventional commits since last release)"
-          fi
-
-  # JOB 3: Cleanup any extra branches created by release-please
-  cleanup:
-    name: 'Cleanup Extra Branches'
-    needs: [release-please]
-    if: always() && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout Repository'
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: 'Delete Old Release Please Branches'
-        run: |
-          echo "🧹 Cleaning up old release-please branches..."
-          
-          # Find and delete old release-please branches (keep only the most recent one if it exists)
-          git branch -r | grep 'origin/release-please--' | head -n -1 | sed 's/origin\///' | while read branch; do
-            if [ ! -z "$branch" ]; then
-              echo "Deleting old branch: $branch"
-              git push origin --delete "$branch" || echo "Branch $branch already deleted or doesn't exist"
-            fi
-          done
-          
-          echo "✅ Cleanup complete!"
+          echo "🎉 New release created!"
+          echo "Tag: ${{ steps.release.outputs.tag_name }}"
+          echo "URL: ${{ steps.release.outputs.html_url }}"
