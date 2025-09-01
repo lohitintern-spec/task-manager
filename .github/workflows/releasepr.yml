@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [release]
     types: [closed]
+  push:
+    branches: [release]
 
 permissions:
   contents: write
@@ -13,7 +15,7 @@ jobs:
   # JOB 1: Deploy the code to your AWS EC2 Server
   deploy-to-ec2:
     name: 'Deploy to EC2'
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
