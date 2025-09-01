@@ -1,4 +1,4 @@
-name: Deploy and Release on Merge
+name: Deploy and Release to Production
 
 on:
   pull_request:
@@ -9,39 +9,44 @@ permissions:
   contents: write
   pull-requests: write
 
-concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  deploy_and_release:
-    if: >
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == 'release' &&
-      github.event.pull_request.head.ref == 'main'
+  # JOB 1: Deploy the code to your AWS EC2 Server
+  deploy-to-ec2:
+    name: 'Deploy to EC2'
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: 'Checkout code from the release branch'
+        uses: actions/checkout@v4
+
+      - name: 'Run Deployment Steps (Placeholder)'
+        run: |
+          echo "🚀 Simulating deployment to EC2..."
+          # Your real build and deploy commands will go here later.
+          echo "✅ Deployment successful!"
+
+  # JOB 2: Create the GitHub Release ONLY if deployment succeeded
+  create-release:
+    name: 'Create GitHub Release'
+    needs: deploy-to-ec2 # This job will only run if 'deploy-to-ec2' succeeds
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout code (needed for release-please)'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Deploy to Production Server
-        run: |
-          echo "🚀 Deploying latest code from the 'release' branch..."
-          echo "✅ Deployment successful!"
-
-      - name: Run Release Please
+      - name: 'Run Release Please'
         id: release
         uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          target-branch: release
-          release-type: simple
           skip-github-pull-request: true
+          release-type: simple
 
-      - name: Output Release Information
+      - name: 'Output Release Information'
         if: ${{ steps.release.outputs.release_created }}
         run: |
           echo "🎉 New release created!"
