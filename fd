@@ -1,0 +1,82 @@
+[33m11dba24[m[33m ([m[1;33mtag: [m[1;33mv1.0.0[m[33m, [m[1;31morigin/release[m[33m, [m[1;32mrelease[m[33m)[m fix: updated text to asdf
+[33m53729c1[m[33m ([m[1;31morigin/main[m[33m)[m feat: updated text
+[33mc7944e5[m docs: updated documentation
+[33m5ec80b8[m feat: changed logo size
+[33mcfb0207[m fix: updated file
+[33me0b0cf4[m fix: removed unwanted files
+[33mcd77d70[m chore: final test for PR trigger
+[33m72f87e9[m chore: final test for PR trigger
+[33me8b6de3[m chore: final test of release process
+[33m816f411[m chore: sync release workflow to main
+[33m3c5ef2c[m feat: changed text
+[33mfd31806[m feat: big update
+[33m4c3f6b6[m docs: tested changes
+[33m247e4dd[m feat: removed files
+[33ma5c2e1a[m chore: update blah.txt with third line
+[33mecf409d[m fix: correct formatting in blah.txt
+[33med45b62[m feat: add first line to blah.txt
+[33m3cb6596[m changes are done
+[33mbb4722d[m docs: update
+[33m0d0af14[m feat: temporary fixb
+[33m7317ef6[m fix: temporary fix
+[33mde353c8[m fix: deleted the file
+[33m34548a9[m using google api
+[33mc744c6f[m using google api
+[33mbe8fc08[m using google api
+[33m2d992bd[m docs: Add r file
+[33mc469950[m fix: Add s file
+[33m4d5a1d3[m feat: Add t file
+[33m3da4119[m docs: Add r file
+[33m74de922[m fix: Add s file
+[33m0325618[m feat: Add t file
+[33m82c029e[m feat: add dark mode toggle to user settings
+[33mdcd3da3[m fix: correct user session timeout issue
+[33m32c5ace[m final commit
+[33m5bcc971[m ig done?
+[33m73878ff[m is wokring?
+[33mf76dcab[m ig done?
+[33mb6da3ea[m updated cd
+[33m219f028[m changed to ecr
+[33m180f824[m changed to ecr
+[33mb6f41c7[m changed to ecr
+[33m8062bb3[m changed to ecr
+[33ma5af4b7[m changed to ecr
+[33m353cf42[m changed to ecr
+[33mdfea39d[m is wokring?
+[33m1197fdc[m is wokring?
+[33mde05289[m is working?
+[33m7a2bea7[m India change
+[33md8925ea[m final
+[33mcf155a0[m thanks namaste
+[33m510f654[m vul
+[33m5ab5a90[m vul
+[33m7fe1d0e[m Fix: Resolved security vulnerabilities with npm audit fix
+[33mf772a60[m final push
+[33maf5b5fc[m sending mail
+[33m689655d[m sending mail
+[33mfb857e3[m trying
+[33maf03d7d[m added rollback
+[33m6e47259[m doinf with owasp
+[33mc1d9337[m added rollback
+[33m0b927d4[m added rollback
+[33m5dec8f3[m added rollback
+[33mf5047df[m added rollback
+[33mc8874d4[m added gmail creds
+[33m62b4bb9[m fake fail test
+[33m9e9c792[m fake fail test
+[33mf24bd2e[m what if it fails
+[33m3f17a2f[m added trivy
+[33m408d60d[m fresh start
+[33m00a2002[m finally tested locally
+[33m96cb578[m final pakka, changed the ports
+[33ma979212[m final ig?
+[33m059225a[m changes dones
+[33m57b91ba[m changes done
+[33mef937ce[m cd deployment
+[33m9575645[m trying something
+[33m5739e95[m added prisma
+[33mcf846df[m first-ci-pipeline
+[33mbe11603[m directory not found
+[33mb146d95[m found infinte loop
+[33m6ffad9b[m updated script
+[33m0673772[m first

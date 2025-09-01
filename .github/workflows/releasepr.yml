@@ -44,7 +44,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           skip-github-pull-request: true
-          release-type: simple
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: release
 
       - name: 'Output Release Information'
         if: ${{ steps.release.outputs.release_created }}
