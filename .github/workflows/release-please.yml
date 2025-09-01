@@ -4,7 +4,7 @@ name: 'Release Please PR Bot'
 on:
   push:
     branches:
-      - main  # This should be your main development branch
+      - release  # 1. IMPORTANT: Watch the 'release' branch
 
 permissions:
   contents: write
@@ -18,8 +18,7 @@ jobs:
       - name: 'Run Release Please Action'
         uses: google-github-actions/release-please-action@v4
         with:
-          # This tells the action to create the GitHub release and tag
-          # once the Release PR is merged.
+          # 2. IMPORTANT: Tell the bot that releases happen on this branch
+          target-branch: release
           release-type: node
-          # Optional: Define a custom title for your Release PR
           pull-request-title-pattern: 'chore(release): release ${version}'
