@@ -1,0 +1,24 @@
+# .github/workflows/release-please.yml
+name: 'Release Please PR Bot'
+
+on:
+  push:
+    branches:
+      - release  # 1. IMPORTANT: Watch the 'release' branch
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: 'Run Release Please'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Run Release Please Action'
+        uses: google-github-actions/release-please-action@v4
+        with:
+          # 2. IMPORTANT: Tell the bot that releases happen on this branch
+          target-branch: release
+          release-type: node
+          pull-request-title-pattern: 'chore(release): release ${version}'
