@@ -24,8 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Run Release Please to publish'
-        uses: googleapis/release-please-action@v4
+        # THIS IS THE FIX: Use the correct, more modern action
+        uses: google-github-actions/release-please-action@v4
         with:
-        #   command: github-release
+          # This 'command' input is now also valid
+          command: github-release
+          
           release-type: node # Or simple
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}

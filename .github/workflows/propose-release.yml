@@ -15,9 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Run Release Please'
-        uses: googleapis/release-please-action@v4
+        # THIS IS THE FIX: Use the correct, more modern action
+        uses: google-github-actions/release-please-action@v4
         with:
-        #   command: release-pr
+          # Now this 'command' input is valid and will not have a red line
+          command: release-pr
+          
           release-type: node # Or simple
+          
+          # The PR will correctly target your 'release' branch
           target-branch: release
+          
+          # Using your PAT is still the best practice
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
