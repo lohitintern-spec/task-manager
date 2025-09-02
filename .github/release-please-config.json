@@ -2,7 +2,7 @@
   "release-type": "node",
   "branches": [
     {
-      "branch": "release",
+      "branch": "Lucky",       
       "release-type": "node"
     }
   ],
