@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/lohitintern-spec/task-manager/compare/v1.1.1...v1.2.0) (2025-09-02)
+
+
+### Features
+
+* add main page title ([b7e65a4](https://github.com/lohitintern-spec/task-manager/commit/b7e65a4f38e92b2420a8883542975bdf51f1c2c7))
+
+
+### Bug Fixes
+
+* **ci:** simplify release-please workflow ([55ec77c](https://github.com/lohitintern-spec/task-manager/commit/55ec77c55de0145b43ea0a1aed82a3fc23479427))
+* delete unused files ([d627125](https://github.com/lohitintern-spec/task-manager/commit/d62712523a17e1a203b0edc8b4e0a7acae641543))
+* removed file ([4cb5c49](https://github.com/lohitintern-spec/task-manager/commit/4cb5c490c6eece38e867ec5e8bc896003c9f828b))
+
 ## [1.1.0](https://github.com/lohitintern-spec/task-manager/compare/v1.0.0...v1.1.0) (2025-09-01)
 
 
