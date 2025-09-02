@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.0](https://github.com/lohitintern-spec/task-manager/compare/v2.0.0...v2.1.0) (2025-09-02)
+
+
+### Features
+
+* **profile:** add biography field to user profiles ([fb4d556](https://github.com/lohitintern-spec/task-manager/commit/fb4d5568416342db08f2d57033773d8eff8c2789))
+
+
+### Bug Fixes
+
+* **api:** add stricter validation for user creation in v2 ([5a5c62e](https://github.com/lohitintern-spec/task-manager/commit/5a5c62ea0467443b04423c83b76ec6bbfa0950c6))
+
+
+### Performance Improvements
+
+* **auth:** optimize session token generation ([a2ce7af](https://github.com/lohitintern-spec/task-manager/commit/a2ce7aff687a62db243995a2c36fe9d2d916d29e))
+
 ## [2.0.0](https://github.com/lohitintern-spec/task-manager/compare/v1.2.0...v2.0.0) (2025-09-02)
 
 
