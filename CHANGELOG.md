@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.0.0](https://github.com/lohitintern-spec/task-manager/compare/v1.2.0...v2.0.0) (2025-09-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* The v1 user API at /api/users is deprecated and has been removed. All clients must migrate to the v2 API at /api/v2/users.
+
+### Features
+
+* **profile:** implement user profile page ([0dc84ca](https://github.com/lohitintern-spec/task-manager/commit/0dc84ca1d515e995254cf72c8468547cc8090cc9))
+* remove v1 user API endpoints ([2d37412](https://github.com/lohitintern-spec/task-manager/commit/2d3741229aa1bb437e270fe260afae6e38205679))
+
+
+### Bug Fixes
+
+* **auth:** resolve login button issue on Firefox ([b80e173](https://github.com/lohitintern-spec/task-manager/commit/b80e17333c9761c38894b4dc0e2b591451395c56))
+
 ## [1.2.0](https://github.com/lohitintern-spec/task-manager/compare/v1.1.1...v1.2.0) (2025-09-02)
 
 
